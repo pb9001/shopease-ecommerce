@@ -1,0 +1,366 @@
+.place-order-page {
+  min-height: 100vh;
+  background: #f8fafc;
+}
+
+/* Header */
+.place-order-header {
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  padding: 0 40px;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.place-order-header h1 {
+  margin-right: auto;
+  color: #111827;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+/* Main Content */
+.place-order-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 35px 40px;
+}
+
+/* Progress */
+.order-progress {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin: 25px 0 30px;
+  padding: 16px 20px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Layout */
+.order-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 30px;
+}
+
+/* Order Form */
+.order-form {
+  flex: 1;
+  padding: 28px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+}
+
+.order-form h2,
+.order-form h3 {
+  color: #111827;
+}
+
+.order-form label {
+  display: block;
+  margin: 18px 0 7px;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.order-form input[type="text"],
+.order-form input[type="tel"],
+.order-form input[type="number"],
+.order-form textarea,
+.order-form select {
+  width: 100%;
+  padding: 12px 14px;
+  box-sizing: border-box;
+  border: 1px solid #d1d5db;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #111827;
+  font-size: 14px;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.order-form input:focus,
+.order-form textarea:focus,
+.order-form select:focus {
+  border-color: #111827;
+  box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.08);
+  outline: none;
+}
+
+.order-form textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+/* Payment Options */
+.payment-option {
+  display: flex !important;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0 !important;
+  padding: 12px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #374151;
+  font-weight: 500 !important;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.payment-option:hover {
+  border-color: #9ca3af;
+  background: #f9fafb;
+}
+
+.payment-option input {
+  width: auto !important;
+  accent-color: #111827;
+}
+
+/* Saved Addresses */
+.saved-addresses {
+  margin-bottom: 30px;
+}
+
+.saved-address-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.saved-address-heading h3 {
+  margin: 0;
+  color: #111827;
+}
+
+.saved-address-heading a {
+  color: #2563eb;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.saved-address-heading a:hover {
+  text-decoration: underline;
+}
+
+.saved-address-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.saved-address {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  width: 100%;
+  padding: 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #333333;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.saved-address:hover {
+  border-color: #93c5fd;
+  background: #f8fbff;
+  transform: translateY(-1px);
+}
+
+.saved-address.selected {
+  border-color: #2563eb;
+  background: #eff6ff;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.08);
+}
+
+.saved-address strong {
+  color: #111827;
+  font-size: 14px;
+}
+
+.saved-address span {
+  color: #6b7280;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.saved-address small {
+  margin-top: 5px;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Order Summary */
+.order-summary {
+  width: 320px;
+  height: fit-content;
+  padding: 25px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+  position: sticky;
+  top: 20px;
+}
+
+.order-summary h2,
+.order-summary h3 {
+  color: #111827;
+}
+
+.order-summary p,
+.order-summary h3 {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.order-summary p {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.order-summary h3 {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid #e5e7eb;
+  color: #111827;
+  font-size: 17px;
+}
+
+/* Place Order Button */
+.order-summary button {
+  width: 100%;
+  padding: 13px 16px;
+  margin-top: 18px;
+  background: #111827;
+  color: #ffffff;
+  border: none;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.order-summary button:hover {
+  background: #000000;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+}
+
+.order-summary button:active {
+  transform: translateY(0);
+}
+
+/* Tablet */
+@media (max-width: 900px) {
+  .place-order-content {
+    padding: 25px;
+  }
+
+  .order-layout {
+    flex-direction: column;
+  }
+
+  .order-form,
+  .order-summary {
+    width: 100%;
+  }
+
+  .order-summary {
+    position: static;
+  }
+}
+
+/* Mobile */
+@media (max-width: 700px) {
+  .place-order-header {
+    min-height: 70px;
+    padding: 15px 20px;
+  }
+
+  .place-order-header h1 {
+    font-size: 21px;
+  }
+
+  .place-order-content {
+    padding: 20px 16px;
+  }
+
+  .order-progress {
+    gap: 8px;
+    padding: 12px;
+    font-size: 12px;
+    flex-wrap: wrap;
+  }
+
+  .order-form {
+    padding: 20px;
+  }
+
+  .saved-address-list {
+    grid-template-columns: 1fr;
+  }
+
+  .saved-address-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 420px) {
+  .place-order-header {
+    padding: 14px 12px;
+  }
+
+  .place-order-header h1 {
+    font-size: 19px;
+  }
+
+  .place-order-content {
+    padding: 15px 12px;
+  }
+
+  .order-form,
+  .order-summary {
+    padding: 16px;
+    border-radius: 10px;
+  }
+
+  .order-progress {
+    margin: 15px 0 20px;
+  }
+}
