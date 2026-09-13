@@ -10,77 +10,68 @@ import { useAuth } from "./AuthContext";
 const OrderContext = createContext();
 
 export function OrderProvider({ children }) {
-  const { isLoggedIn } = useAuth();
-
-  const getCurrentUserKey = () => {
-    const savedUser =
-      localStorage.getItem("shopease_user");
-
-    if (!savedUser) {
-      return null;
-    }
-
-    const user = JSON.parse(savedUser);
-
-    return user.email
-      ? `shopease_orders_${user.email.toLowerCase()}`
-      : null;
-  };
+  const { token, isAuthenticated } = useAuth();
 
   const [orders, setOrders] = useState([]);
 
-  useEffect(() => {
-    if (!isLoggedIn) {
+  const [loading, setLoading] = useState(false);
+
+  const [error, setError] = useState("");
+
+  // FETCH ORDERS FROM BACKEND
+  const fetchOrders = async () => {
+    if (!token) {
       setOrders([]);
       return;
     }
 
-    const userKey = getCurrentUserKey();
+    try {
+      setLoading(true);
+      setError("");
 
-    if (!userKey) {
-      setOrders([]);
-      return;
+      const response = await fetch(
+        "http://localhost:5000/api/orders/my-orders",
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Failed to fetch orders"
+        );
+      }
+
+      setOrders(data.orders || []);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
     }
-
-    const savedOrders =
-      localStorage.getItem(userKey);
-
-    setOrders(
-      savedOrders
-        ? JSON.parse(savedOrders)
-        : []
-    );
-  }, [isLoggedIn]);
-
-  useEffect(() => {
-    if (!isLoggedIn) {
-      return;
-    }
-
-    const userKey = getCurrentUserKey();
-
-    if (!userKey) {
-      return;
-    }
-
-    localStorage.setItem(
-      userKey,
-      JSON.stringify(orders)
-    );
-  }, [orders, isLoggedIn]);
-
-  const addOrder = (order) => {
-    setOrders((currentOrders) => [
-      ...currentOrders,
-      order,
-    ]);
   };
+
+  // FETCH ORDERS WHEN USER LOGS IN
+  useEffect(() => {
+    if (isAuthenticated && token) {
+      fetchOrders();
+    } else {
+      setOrders([]);
+      setError("");
+    }
+  }, [isAuthenticated, token]);
 
   return (
     <OrderContext.Provider
       value={{
         orders,
-        addOrder,
+        loading,
+        error,
+        fetchOrders,
       }}
     >
       {children}

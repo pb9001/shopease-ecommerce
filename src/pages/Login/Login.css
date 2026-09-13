@@ -351,3 +351,30 @@
     gap: 12px;
   }
 }
+
+/* ================================
+   ADMIN LOGIN OPTION
+================================ */
+
+.admin-login-option {
+  width: 100%;
+  margin-top: 12px;
+  padding: 13px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #111827;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.admin-login-option:hover {
+  background: #f1f5f9;
+  border-color: #9ca3af;
+  transform: translateY(-1px);
+}

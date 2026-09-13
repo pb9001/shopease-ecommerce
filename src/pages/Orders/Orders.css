@@ -406,3 +406,50 @@
     height: 55px;
   }
 }
+
+/* RETURN SECTION */
+
+.order-return-section {
+  margin: 0 25px 25px;
+  padding: 16px 20px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+}
+
+.order-return-section p {
+  margin: 0 0 8px;
+  color: #374151;
+  font-size: 14px;
+}
+
+.order-return-section p:last-child {
+  margin-bottom: 0;
+}
+
+.order-return-section strong {
+  color: #111827;
+}
+
+.request-return-btn {
+  margin-top: 8px;
+  padding: 9px 16px;
+  border: none;
+  border-radius: 8px;
+  background: #111827;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.request-return-btn:hover {
+  background: #000000;
+}
+
+@media (max-width: 600px) {
+  .order-return-section {
+    margin: 0 18px 18px;
+    padding: 16px;
+  }
+}

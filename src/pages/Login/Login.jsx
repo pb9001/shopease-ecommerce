@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
 import { useAuth } from "../../context/AuthContext";
-
 import "./Login.css";
 
 function Login() {
@@ -10,33 +8,22 @@ function Login() {
   const { login } = useAuth();
 
   const [email, setEmail] = useState(() => {
-    return (
-      localStorage.getItem(
-        "shopease_remembered_email"
-      ) || ""
-    );
+    return localStorage.getItem("shopease_remembered_email") || "";
   });
 
-  const [password, setPassword] =
-    useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
-  const [showPassword, setShowPassword] =
-    useState(false);
+  const [rememberMe, setRememberMe] = useState(() => {
+    return localStorage.getItem("shopease_remember") === "true";
+  });
 
-  const [rememberMe, setRememberMe] =
-    useState(() => {
-      return (
-        localStorage.getItem(
-          "shopease_remember"
-        ) === "true"
-      );
-    });
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const cleanEmail =
-      email.trim().toLowerCase();
+    const cleanEmail = email.trim().toLowerCase();
 
     if (!cleanEmail) {
       alert("Please enter your email.");
@@ -53,77 +40,44 @@ function Login() {
       return;
     }
 
-    const savedUsers =
-      localStorage.getItem("shopease_users");
+    try {
+      setLoading(true);
 
-    const users = savedUsers
-      ? JSON.parse(savedUsers)
-      : [];
+      // Login using backend API
+      const data = await login(cleanEmail, password);
 
-    const user = users.find(
-      (account) =>
-        account.email.toLowerCase() ===
-        cleanEmail
-    );
+      // Remember email
+      if (rememberMe) {
+        localStorage.setItem("shopease_remember", "true");
+        localStorage.setItem(
+          "shopease_remembered_email",
+          cleanEmail
+        );
+      } else {
+        localStorage.removeItem("shopease_remember");
+        localStorage.removeItem("shopease_remembered_email");
+      }
 
-    if (!user) {
-      alert(
-        "No account found with this email. Please register first."
-      );
-      return;
+      // Redirect according to role
+      if (data.user.role === "admin") {
+        alert("Admin login successful!");
+        navigate("/admin/dashboard");
+      } else {
+        alert("Login successful!");
+        navigate("/catalogue");
+      }
+    } catch (error) {
+      alert(error.message || "Login failed.");
+    } finally {
+      setLoading(false);
     }
-
-    if (user.password !== password) {
-      alert("Incorrect password.");
-      return;
-    }
-
-    const currentUser = {
-      name: user.name,
-      email: user.email,
-    };
-
-    localStorage.setItem(
-      "shopease_user",
-      JSON.stringify(currentUser)
-    );
-
-    if (rememberMe) {
-      localStorage.setItem(
-        "shopease_remember",
-        "true"
-      );
-
-      localStorage.setItem(
-        "shopease_remembered_email",
-        cleanEmail
-      );
-    } else {
-      localStorage.removeItem(
-        "shopease_remember"
-      );
-
-      localStorage.removeItem(
-        "shopease_remembered_email"
-      );
-    }
-
-    login(currentUser);
-
-    alert("Login successful!");
-
-    navigate("/catalogue");
   };
 
   return (
     <div className="login-page">
-
       <div className="login-card">
 
-        <Link
-          to="/"
-          className="login-logo"
-        >
+        <Link to="/" className="login-logo">
           ShopEase
         </Link>
 
@@ -144,9 +98,7 @@ function Login() {
             type="email"
             placeholder="Enter your email"
             value={email}
-            onChange={(e) =>
-              setEmail(e.target.value)
-            }
+            onChange={(e) => setEmail(e.target.value)}
           />
 
           <label htmlFor="password">
@@ -157,29 +109,19 @@ function Login() {
 
             <input
               id="password"
-              type={
-                showPassword
-                  ? "text"
-                  : "password"
-              }
+              type={showPassword ? "text" : "password"}
               placeholder="Enter your password"
               value={password}
-              onChange={(e) =>
-                setPassword(e.target.value)
-              }
+              onChange={(e) => setPassword(e.target.value)}
             />
 
             <button
               type="button"
               onClick={() =>
-                setShowPassword(
-                  !showPassword
-                )
+                setShowPassword(!showPassword)
               }
             >
-              {showPassword
-                ? "Hide"
-                : "Show"}
+              {showPassword ? "Hide" : "Show"}
             </button>
 
           </div>
@@ -191,9 +133,7 @@ function Login() {
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e) =>
-                  setRememberMe(
-                    e.target.checked
-                  )
+                  setRememberMe(e.target.checked)
                 }
               />
 
@@ -209,8 +149,9 @@ function Login() {
           <button
             type="submit"
             className="login-btn"
+            disabled={loading}
           >
-            Login
+            {loading ? "Logging in..." : "Login"}
           </button>
 
         </form>
@@ -231,15 +172,27 @@ function Login() {
           Continue with Google
         </button>
 
+        {/* Admin Login */}
+
+        <button
+          type="button"
+          className="admin-login-option"
+          onClick={() =>
+            navigate("/admin/login")
+          }
+        >
+          Login as Admin
+        </button>
+
         <p className="register-link">
           Don't have an account?{" "}
+
           <Link to="/register">
             Create Account
           </Link>
         </p>
 
       </div>
-
     </div>
   );
 }

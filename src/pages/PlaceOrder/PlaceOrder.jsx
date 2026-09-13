@@ -1,8 +1,13 @@
 import { useEffect, useState } from "react";
+
 import { Link, useNavigate } from "react-router-dom";
 
 import { useCart } from "../../context/CartContext";
+
 import { useWishlist } from "../../context/WishlistContext";
+
+import { useAuth } from "../../context/AuthContext";
+
 import { useOrders } from "../../context/OrderContext";
 
 import "./PlaceOrder.css";
@@ -18,12 +23,17 @@ function PlaceOrder() {
   } = useCart();
 
   const { wishlistItems } = useWishlist();
-  const { addOrder } = useOrders();
+
+  const { token } = useAuth();
+
+  const { fetchOrders } = useOrders();
 
   const [addresses, setAddresses] = useState([]);
 
   const [selectedAddressId, setSelectedAddressId] =
     useState(null);
+
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -33,6 +43,7 @@ function PlaceOrder() {
     pin: "",
   });
 
+  // LOAD SAVED ADDRESSES
   useEffect(() => {
     const savedAddresses =
       localStorage.getItem("shopease_addresses");
@@ -70,6 +81,7 @@ function PlaceOrder() {
     discount +
     deliveryCharge;
 
+  // SELECT SAVED ADDRESS
   const handleAddressSelect = (address) => {
     setSelectedAddressId(address.id);
 
@@ -82,6 +94,7 @@ function PlaceOrder() {
     });
   };
 
+  // FORM CHANGE
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -93,7 +106,8 @@ function PlaceOrder() {
     setSelectedAddressId(null);
   };
 
-  const handlePlaceOrder = (e) => {
+  // PLACE ORDER
+  const handlePlaceOrder = async (e) => {
     e.preventDefault();
 
     if (cartItems.length === 0) {
@@ -102,50 +116,75 @@ function PlaceOrder() {
       return;
     }
 
-    const form = e.target;
+    if (!token) {
+      alert("Please login before placing an order.");
+      navigate("/");
+      return;
+    }
 
-    const newOrder = {
-      id: `ORD-${Date.now()}`,
+    try {
+      setLoading(true);
 
-      items: cartItems,
+      const orderItems = cartItems.map((item) => ({
+        product: String(item._id || item.id),
+        name: item.name,
+        price: Number(item.price),
+        quantity: Number(item.quantity),
+      }));
 
-      subtotal: cartTotal,
+      const response = await fetch(
+        "http://localhost:5000/api/orders",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            items: orderItems,
+            subtotal: cartTotal,
+            discount: discount,
+            deliveryCharge: deliveryCharge,
+            totalAmount: finalTotal,
+            paymentMethod: "cod",
+            shippingAddress: {
+              fullName: formData.fullName,
+              address: formData.address,
+              city: formData.city,
+              state: formData.state,
+              pin: formData.pin,
+            },
+          }),
+        }
+      );
 
-      discount: discount,
+      const data = await response.json();
 
-      deliveryCharge: deliveryCharge,
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Failed to place order"
+        );
+      }
 
-      totalAmount: finalTotal,
+      // REFRESH ORDERS IMMEDIATELY
+      await fetchOrders();
 
-      paymentMethod: form.payment.value,
+      alert("Order placed successfully!");
 
-      paymentStatus: "Pending",
+      // CLEAR CART ONLY AFTER SUCCESSFUL ORDER
+      clearCart();
 
-      status: "Confirmed",
-
-      shippingAddress: {
-        fullName: formData.fullName,
-        address: formData.address,
-        city: formData.city,
-        state: formData.state,
-        pin: formData.pin,
-      },
-
-      createdAt: new Date().toISOString(),
-    };
-
-    addOrder(newOrder);
-
-    clearCart();
-
-    navigate("/order-success");
+      navigate("/order-success");
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="place-order-page">
-
       <header className="place-order-header">
-
         <Link to="/catalogue">
           <h1>ShopEase</h1>
         </Link>
@@ -161,11 +200,9 @@ function PlaceOrder() {
         <Link to="/cart">
           🛒 Cart ({cartCount})
         </Link>
-
       </header>
 
       <main className="place-order-content">
-
         <h2>Place Your Order</h2>
 
         <div className="order-progress">
@@ -179,9 +216,7 @@ function PlaceOrder() {
         </div>
 
         {cartItems.length === 0 ? (
-
           <div className="empty-order">
-
             <h3>Your cart is empty</h3>
 
             <p>
@@ -192,21 +227,13 @@ function PlaceOrder() {
             <Link to="/catalogue">
               Browse Products
             </Link>
-
           </div>
-
         ) : (
-
           <form onSubmit={handlePlaceOrder}>
-
             <div className="order-layout">
-
               <section className="order-form">
-
                 {addresses.length > 0 && (
-
                   <div className="saved-addresses">
-
                     <div className="saved-address-heading">
                       <h3>Saved Addresses</h3>
 
@@ -216,9 +243,7 @@ function PlaceOrder() {
                     </div>
 
                     <div className="saved-address-list">
-
                       {addresses.map((address) => (
-
                         <button
                           type="button"
                           key={address.id}
@@ -234,7 +259,6 @@ function PlaceOrder() {
                             )
                           }
                         >
-
                           <strong>
                             {address.name}
                           </strong>
@@ -255,15 +279,10 @@ function PlaceOrder() {
                               ✓ Selected
                             </small>
                           )}
-
                         </button>
-
                       ))}
-
                     </div>
-
                   </div>
-
                 )}
 
                 <h3>Shipping Address</h3>
@@ -343,52 +362,23 @@ function PlaceOrder() {
                 <h3>Payment Method</h3>
 
                 <label className="payment-option">
-
                   <input
                     type="radio"
                     name="payment"
                     value="cod"
+                    defaultChecked
                     required
                   />
 
                   Cash on Delivery
-
                 </label>
-
-                <label className="payment-option">
-
-                  <input
-                    type="radio"
-                    name="payment"
-                    value="card"
-                  />
-
-                  Credit / Debit Card
-
-                </label>
-
-                <label className="payment-option">
-
-                  <input
-                    type="radio"
-                    name="payment"
-                    value="upi"
-                  />
-
-                  UPI
-
-                </label>
-
               </section>
 
               <aside className="order-summary">
-
                 <h3>Order Summary</h3>
 
                 {cartItems.map((item) => (
-
                   <p key={item.id}>
-
                     <span>
                       {item.name} ×{" "}
                       {item.quantity}
@@ -401,15 +391,14 @@ function PlaceOrder() {
                         item.quantity
                       ).toLocaleString("en-IN")}
                     </span>
-
                   </p>
-
                 ))}
 
                 <hr />
 
                 <p>
                   Subtotal
+
                   <span>
                     ₹
                     {cartTotal.toLocaleString(
@@ -420,6 +409,7 @@ function PlaceOrder() {
 
                 <p>
                   Discount
+
                   <span>
                     −₹
                     {discount.toLocaleString(
@@ -430,6 +420,7 @@ function PlaceOrder() {
 
                 <p>
                   Delivery
+
                   <span>
                     ₹{deliveryCharge}
                   </span>
@@ -439,6 +430,7 @@ function PlaceOrder() {
 
                 <h3>
                   Total
+
                   <span>
                     ₹
                     {finalTotal.toLocaleString(
@@ -447,20 +439,19 @@ function PlaceOrder() {
                   </span>
                 </h3>
 
-                <button type="submit">
-                  Place Order
+                <button
+                  type="submit"
+                  disabled={loading}
+                >
+                  {loading
+                    ? "Placing Order..."
+                    : "Place Order"}
                 </button>
-
               </aside>
-
             </div>
-
           </form>
-
         )}
-
       </main>
-
     </div>
   );
 }

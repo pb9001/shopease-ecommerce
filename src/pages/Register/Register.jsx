@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import { Link, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../context/AuthContext";
@@ -7,13 +8,15 @@ import "./Register.css";
 
 function Register() {
   const navigate = useNavigate();
+
   const { login } = useAuth();
 
-  const [showPassword, setShowPassword] =
-    useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const [showConfirmPassword, setShowConfirmPassword] =
     useState(false);
+
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -31,11 +34,13 @@ function Register() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const name = formData.name.trim();
+
     const email = formData.email.trim().toLowerCase();
+
     const password = formData.password;
 
     if (!name) {
@@ -53,74 +58,56 @@ function Register() {
       return;
     }
 
-    if (
-      password !== formData.confirmPassword
-    ) {
+    if (password !== formData.confirmPassword) {
       alert("Passwords do not match.");
       return;
     }
 
-    const savedUsers =
-      localStorage.getItem("shopease_users");
+    try {
+      setLoading(true);
 
-    const users = savedUsers
-      ? JSON.parse(savedUsers)
-      : [];
+      // REGISTER USER IN MONGODB
+      const response = await fetch(
+        "http://localhost:5000/api/auth/register",
+        {
+          method: "POST",
 
-    const existingUser = users.find(
-      (user) =>
-        user.email.toLowerCase() === email
-    );
+          headers: {
+            "Content-Type": "application/json",
+          },
 
-    if (existingUser) {
-      alert(
-        "An account with this email already exists. Please login."
+          body: JSON.stringify({
+            name,
+            email,
+            password,
+          }),
+        }
       );
-      return;
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Registration failed"
+        );
+      }
+
+      // AUTOMATICALLY LOGIN THE NEW USER
+      await login(email, password);
+
+      alert("Account created successfully!");
+
+      navigate("/catalogue");
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setLoading(false);
     }
-
-    const newUser = {
-      id: Date.now(),
-      name,
-      email,
-      password,
-    };
-
-    const updatedUsers = [
-      ...users,
-      newUser,
-    ];
-
-    localStorage.setItem(
-      "shopease_users",
-      JSON.stringify(updatedUsers)
-    );
-
-    // Keep current user for profile/session
-    localStorage.setItem(
-      "shopease_user",
-      JSON.stringify({
-        name,
-        email,
-      })
-    );
-
-    // Automatically login the new account
-    login({
-      name,
-      email,
-    });
-
-    alert("Account created successfully!");
-
-    navigate("/catalogue");
   };
 
   return (
     <div className="register-page">
-
       <div className="register-card">
-
         <Link
           to="/"
           className="register-logo"
@@ -135,7 +122,6 @@ function Register() {
         </p>
 
         <form onSubmit={handleSubmit}>
-
           <label htmlFor="name">
             Full Name
           </label>
@@ -147,6 +133,7 @@ function Register() {
             placeholder="Enter your full name"
             value={formData.name}
             onChange={handleChange}
+            required
           />
 
           <label htmlFor="email">
@@ -160,6 +147,7 @@ function Register() {
             placeholder="Enter your email"
             value={formData.email}
             onChange={handleChange}
+            required
           />
 
           <label htmlFor="password">
@@ -167,7 +155,6 @@ function Register() {
           </label>
 
           <div className="password-field">
-
             <input
               id="password"
               name="password"
@@ -179,6 +166,7 @@ function Register() {
               placeholder="Create a password"
               value={formData.password}
               onChange={handleChange}
+              required
             />
 
             <button
@@ -187,11 +175,8 @@ function Register() {
                 setShowPassword(!showPassword)
               }
             >
-              {showPassword
-                ? "Hide"
-                : "Show"}
+              {showPassword ? "Hide" : "Show"}
             </button>
-
           </div>
 
           <label htmlFor="confirmPassword">
@@ -199,7 +184,6 @@ function Register() {
           </label>
 
           <div className="password-field">
-
             <input
               id="confirmPassword"
               name="confirmPassword"
@@ -211,6 +195,7 @@ function Register() {
               placeholder="Confirm your password"
               value={formData.confirmPassword}
               onChange={handleChange}
+              required
             />
 
             <button
@@ -225,27 +210,27 @@ function Register() {
                 ? "Hide"
                 : "Show"}
             </button>
-
           </div>
 
           <button
             type="submit"
             className="register-btn"
+            disabled={loading}
           >
-            Create Account
+            {loading
+              ? "Creating Account..."
+              : "Create Account"}
           </button>
-
         </form>
 
         <p className="login-link">
           Already have an account?{" "}
+
           <Link to="/">
             Login
           </Link>
         </p>
-
       </div>
-
     </div>
   );
 }
